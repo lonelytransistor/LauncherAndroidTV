@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import net.lonelytransistor.launcher.repos.AllRepos;
 import net.lonelytransistor.launcher.repos.ApkRepo;
+import net.lonelytransistor.launcher.repos.JustWatch;
 import net.lonelytransistor.launcher.repos.MovieTitle;
 
 import java.util.ArrayList;
@@ -39,10 +40,12 @@ public class MovieCard extends Card {
 
     Intent clickIntent;
     public MovieCard(MovieTitle m) {
-        if (m.originalTitle != null && !m.originalTitle.isEmpty()) {
-            title = m.originalTitle;
-        } else {
-            title = m.title;
+        title = m.title;
+        if (m.originalTitle != null &&
+                !m.originalTitle.isEmpty() &&
+                JustWatch.jaccardSimilarity(title, m.originalTitle) < 90) {
+            title += " - ";
+            title += m.originalTitle;
         }
         desc = m.description;
 

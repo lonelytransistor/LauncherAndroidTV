@@ -809,7 +809,7 @@ public class JustWatch {
         return json;
     }
 
-    private static int jaccardSimilarity(String searchQuery, String realTitle) {
+    public static int jaccardSimilarity(String searchQuery, String realTitle) {
         searchQuery = searchQuery.toLowerCase().replaceAll("[^\\w\\s]", "").trim();
         realTitle = realTitle.toLowerCase().replaceAll("[^\\w\\s]", "").trim();
 

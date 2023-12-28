@@ -159,9 +159,10 @@ public class MovieRepo implements Serializable {
                     MovieTitle movie = titles_.get(0);
                     movie.system.pkgName = prog.getPackageName();
                     movie.system.lastWatched = prog.getLastEngagementTimeUtcMillis();
+                    movie.system.timeWatched = timeNow;
+                    movie.system.runtime = timeTotal;
                     switch (prog.getWatchNextType()) {
                         case TvContractCompat.WatchNextPrograms.WATCH_NEXT_TYPE_CONTINUE:
-                            movie.system.timeWatched = timeNow;
                             movie.system.state = (10*timeNow)/timeTotal > 9 ?
                                     MovieTitle.System.State.WATCHED : MovieTitle.System.State.WATCHING;
                             break;
@@ -182,7 +183,9 @@ public class MovieRepo implements Serializable {
                     } catch (URISyntaxException ignored) {}
 
                     mutexLocal.lock();
-                    watchNext.add(movie);
+                    if (!watchNext.contains(title)) {
+                        watchNext.add(title);
+                    }
                     if (requests.decrementAndGet() == 0) {
                         watchNextTimestamp = System.currentTimeMillis();
                     }

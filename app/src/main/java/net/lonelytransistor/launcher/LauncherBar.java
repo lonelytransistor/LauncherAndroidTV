@@ -9,10 +9,12 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,7 +39,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class LauncherBar extends FrameLayout {
+public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGlobalFocusChangeListener {
     private static final String TAG = "LauncherActivity";
 
     private static final int DELAY = 200;
@@ -58,6 +60,11 @@ public class LauncherBar extends FrameLayout {
     public LauncherBar(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         constructor();
+    }
+
+    @Override
+    public void onGlobalFocusChanged(View oldFocus, View newFocus) {
+        Log.i(TAG, "Focus has changed from: " + oldFocus + " to: " + newFocus + " " + topBar.isFocusable() + " " + topBadgeBar.isFocusable() + " " + bottomBar.isFocusable());
     }
 
     private OnKeyListener keyListenerRoot = (v, keyCode, event) -> false;
@@ -94,7 +101,6 @@ public class LauncherBar extends FrameLayout {
         Map<View, ScheduledFuture<?>> delayedSchedule = new HashMap<>();
 
         public void onFocused(BarViewHolder vh, boolean hasFocus) {}
-        private final Map<View, BarViewHolder> viewToViewHolder = new HashMap<>();
         private void animateFocus(View v, boolean hasFocus) {
             animatedViews.add(v);
             v.animate()
@@ -115,8 +121,16 @@ public class LauncherBar extends FrameLayout {
                         @Override public void onAnimationPause(Animator animation) { reset(); }
                     })
                     .start();
-            if ((hasFocus && v.getScaleY() == 1.0f) || (!hasFocus && v.getScaleY() == 1.1f))
-                onFocused(viewToViewHolder.get(v), hasFocus);
+            if ((hasFocus && v.getScaleY() == 1.0f) || (!hasFocus && v.getScaleY() == 1.1f)) {
+                BarViewHolder vh;
+                try {
+                    vh = (BarViewHolder) rootView.getChildViewHolder(v);
+                } catch (Exception e) {
+                    Log.w(TAG, "Hover out of bounds.");
+                    return;
+                }
+                onFocused(vh, hasFocus);
+            }
         }
         private final List<View> animatedViews = new ArrayList<>();
         private final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
@@ -165,6 +179,8 @@ public class LauncherBar extends FrameLayout {
         @Override
         final public void onBindViewHolder(@NonNull BarViewHolder vh, int position) {
             positionToViewHolder.put(position, vh);
+            vh.itemView.setScaleX(1.0f);
+            vh.itemView.setScaleY(1.0f);
             onBindView(vh, position);
         }
         abstract public void onBindView(@NonNull BarViewHolder holder, int position);
@@ -174,7 +190,6 @@ public class LauncherBar extends FrameLayout {
         final public BarViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             BarViewHolder vh = onCreateViewHolder(parent);
             vh.itemView.setOnFocusChangeListener(focusListener);
-            viewToViewHolder.put(vh.itemView, vh);
             return vh;
         }
         @NonNull abstract public BarViewHolder onCreateViewHolder(@NonNull ViewGroup parent);
@@ -766,6 +781,8 @@ public class LauncherBar extends FrameLayout {
         bottomBarAdapter.requestSelection(0);
     }
     private void constructor() {
+        getViewTreeObserver().addOnGlobalFocusChangeListener(this);
+
         Context ctx = getContext();
         LayoutInflater inflater = LayoutInflater.from(ctx);
         inflater.inflate(R.layout.launcher_bar, this, true);
