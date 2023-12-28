@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/top_card_view_layout"
+    android:layout_width="125dp"
+    android:layout_height="300dp"
+    android:background="@drawable/border_normal"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:clipToPadding="true"
+    android:padding="8dp">
+
+    <View
+        android:id="@+id/background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/main_image"
+        android:layout_width="match_parent"
+        android:layout_height="154dp"
+        android:adjustViewBounds="false"
+        android:scaleType="fitCenter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/status_icon"
+        android:layout_width="24dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitEnd"
+        app:layout_constraintEnd_toEndOf="@id/main_image"
+        app:layout_constraintTop_toTopOf="@id/main_image" />
+
+    <net.lonelytransistor.commonlib.OutlinedTextView
+        android:id="@+id/score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="48dp"
+        android:textAlignment="textEnd"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/score_icon"
+        app:layout_constraintEnd_toStartOf="@id/score_icon"
+        app:layout_constraintTop_toTopOf="@id/score_icon"
+        app:stroke="3.0"
+        app:strokeColor="@android:color/black" />
+
+    <ImageView
+        android:id="@+id/score_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/stars"
+        app:layout_constraintBottom_toBottomOf="@id/main_image"
+        app:layout_constraintEnd_toEndOf="@id/main_image" />
+
+    <net.lonelytransistor.commonlib.OutlinedTextView
+        android:id="@+id/popularity"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:width="48dp"
+        android:textAlignment="textEnd"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/popularity_icon"
+        app:layout_constraintEnd_toStartOf="@id/popularity_icon"
+        app:layout_constraintTop_toTopOf="@id/popularity_icon"
+        app:stroke="3.0"
+        app:strokeColor="@android:color/black" />
+
+    <ImageView
+        android:id="@+id/popularity_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toTopOf="@id/score_icon"
+        app:layout_constraintEnd_toEndOf="@id/main_image" />
+
+    <TextView
+        android:id="@+id/primary_text"
+        android:layout_width="match_parent"
+        android:layout_height="30sp"
+        android:layout_margin="0dp"
+        android:width="100dp"
+        android:fontFamily="sans-serif-condensed"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:paddingHorizontal="11dp"
+        android:paddingVertical="3sp"
+        android:singleLine="true"
+        android:text="aaaa"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_image" />
+
+    <net.lonelytransistor.commonlib.VerticalMarqueeTextView
+        android:id="@+id/secondary_text"
+        style="@style/Widget.Leanback.ImageCardView.ContentStyle"
+        android:layout_width="match_parent"
+        android:layout_height="60sp"
+        android:height="60sp"
+        android:fontFamily="sans-serif-condensed"
+        android:lineHeight="14sp"
+        android:maxWidth="100dp"
+        android:paddingHorizontal="11dp"
+        android:paddingBottom="2sp"
+        android:textColor="#AAAAAA"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/primary_text" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

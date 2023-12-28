@@ -1,0 +1,4 @@
+<resources>
+
+    <style name="Theme.Launcher" parent="@style/Theme.Leanback" />
+</resources>
