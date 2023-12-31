@@ -1,6 +1,9 @@
 # LauncherAndroidTV
 An overlay-type launcher for AndroidTV. The idea is to make as lightweight fully featured Launcher as possible with the ability to not interrupt the user's experience.
 
+Permissions grantable only via adb needed:
+```appwidget grantbind --package net.lonelytransistor.launcher --user 0```
+
 To launch the Launcher, either its main activity may be started OR you can send a global broadcast to show the overlay without pausing playback:
 
 ```am broadcast -a android.intent.action.MAIN -c android.intent.category.HOME -f 0x01000000```
