@@ -31,7 +31,7 @@ public class MovieRepo implements Serializable {
     private static Preferences prefs = null;
     private static final Map<String,MovieTitle> movieRepoID = new HashMap<>();
     private static final Map<String,String> movieAliases = new HashMap<>();
-    private static final ReentrantLock mutex = new ReentrantLock();
+    static final ReentrantLock mutex = new ReentrantLock();
     private static final List<MovieTitle> watchNext = new ArrayList<>();
     private static long watchNextTimestamp = 0;
     private static final Map<JustWatch.Type, List<MovieTitle>> recommended = new HashMap<>();
@@ -135,7 +135,6 @@ public class MovieRepo implements Serializable {
                 null, new String[]{}, null);
         assert cursor != null;
         AtomicInteger requests = new AtomicInteger(0);
-        ReentrantLock mutexLocal = new ReentrantLock();
         if (cursor.moveToFirst()) do {
             WatchNextProgram prog = WatchNextProgram.fromCursor(cursor);
             String title = prog.getTitle();
@@ -163,7 +162,7 @@ public class MovieRepo implements Serializable {
                     movie.system.runtime = timeTotal;
                     switch (prog.getWatchNextType()) {
                         case TvContractCompat.WatchNextPrograms.WATCH_NEXT_TYPE_CONTINUE:
-                            movie.system.state = (10*timeNow)/timeTotal > 9 ?
+                            movie.system.state = (100*timeNow/timeTotal) > 95 ?
                                     MovieTitle.System.State.WATCHED : MovieTitle.System.State.WATCHING;
                             break;
                         case TvContractCompat.WatchNextPrograms.WATCH_NEXT_TYPE_NEXT:
@@ -179,17 +178,20 @@ public class MovieRepo implements Serializable {
                     MovieTitle title = titles_.get(0);
                     try {
                         Intent intent = prog.getIntent();
-                        title.offers.put(ApkRepo.getPlatform(intent), intent.getDataString());
+                        ApkRepo.Platform platform = ApkRepo.getPlatform(intent);
+                        if (ApkRepo.getPlatformApp(platform) != null) {
+                            title.offers.put(platform, intent.getDataString());
+                        }
                     } catch (URISyntaxException ignored) {}
 
-                    mutexLocal.lock();
+                    mutex.lock();
                     if (!watchNext.contains(title)) {
                         watchNext.add(title);
                     }
                     if (requests.decrementAndGet() == 0) {
                         watchNextTimestamp = System.currentTimeMillis();
                     }
-                    mutexLocal.unlock();
+                    mutex.unlock();
                 }
             });
         } while (cursor.moveToNext());

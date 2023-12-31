@@ -616,10 +616,10 @@ public class JustWatch {
                     if (offer == null)
                         continue;
 
-                    title.offers.put(
-                            getPlatform(offer.getJSONObject("package").getString("shortName")),
-                            offer.getString("standardWebURL")
-                    );
+                    ApkRepo.Platform platform = getPlatform(offer.getJSONObject("package").getString("shortName"));
+                    if (ApkRepo.getPlatformApp(platform) != null) {
+                        title.offers.put(platform, offer.getString("standardWebURL"));
+                    }
                 }
                 title.year = content.getInt("originalReleaseYear");
 

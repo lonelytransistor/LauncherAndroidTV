@@ -14,7 +14,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +26,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.lonelytransistor.commonlib.OutlinedTextView;
 import net.lonelytransistor.commonlib.ProgressDrawable;
+import net.lonelytransistor.launcher.repos.MovieRepo;
+import net.lonelytransistor.launcher.repos.MovieTitle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGlobalFocusChangeListener {
+public class LauncherBar extends FrameLayout {
     private static final String TAG = "LauncherActivity";
 
     private static final int DELAY = 200;
@@ -60,11 +61,6 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
     public LauncherBar(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         constructor();
-    }
-
-    @Override
-    public void onGlobalFocusChanged(View oldFocus, View newFocus) {
-        Log.i(TAG, "Focus has changed from: " + oldFocus + " to: " + newFocus + " " + topBar.isFocusable() + " " + topBadgeBar.isFocusable() + " " + bottomBar.isFocusable());
     }
 
     private OnKeyListener keyListenerRoot = (v, keyCode, event) -> false;
@@ -253,17 +249,35 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
                 case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_DOWN:
                 case KeyEvent.KEYCODE_CHANNEL_DOWN:
                     bottomBarAdapter.restoreFocus();
+                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_UP_LEFT:
+                case KeyEvent.KEYCODE_DPAD_UP_RIGHT:
+                case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_UP:
+                case KeyEvent.KEYCODE_CHANNEL_UP:
                     return true;
             }
             return onKey(v, keyCode, event);
         };
         private final OnClickListener clickListenerInternal = v -> {
             MovieCard card = currentRow.get(lastActiveIx);
-            if (card.clickIntent != null)
-                LauncherBar.this.getContext().startActivity(card.clickIntent);
-            if (card.cb != null)
-                card.cb.onClicked(card);
-            clickListenerRoot.onClick(v);
+            if (card.clickIntent != null && card.clickIntent.getAction() != null && !card.clickIntent.getAction().isEmpty()) {
+                Log.i(TAG, "intent: " + card.clickIntent + card.clickIntent.getDataString());
+                for (MovieTitle t : MovieRepo.getWatchNext()) {
+                    Log.i(TAG, "Watchnext " + t);
+                }
+                try {
+                    LauncherBar.this.getContext().startActivity(card.clickIntent);
+                } catch (Exception e) {
+                    Log.e(TAG, "OnClickCard failed.", e);
+                }
+            }
+            if (card.cb != null) {
+                if (!card.cb.onClicked(card)) {
+                    clickListenerRoot.onClick(v);
+                }
+            } else {
+                clickListenerRoot.onClick(v);
+            }
         };
         @NonNull
         @Override
@@ -312,8 +326,9 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
             vh.secondaryText.setSelected(hasFocus);
             bottomBarAdapter.showChevron();
             MovieCard card = currentRow.get(lastActiveIx);
-            if (card.cb != null)
+            if (card.cb != null) {
                 card.cb.onHovered(card, hasFocus);
+            }
         }
         @Override
         public void onBindView(@NonNull BarViewHolder holder, int position) {
@@ -353,6 +368,8 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
             currentRowIx = rowIx;
             currentRow = rows.get(rowIx);
             lastActiveIx = 0;
+            setFocusable(getItemCount() > 0);
+            setFocusableInTouchMode(getItemCount() > 0);
         }
         public boolean selectRow(int rowIx) {
             selectRowPriv(rowIx);
@@ -432,15 +449,24 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
                 case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_DOWN:
                 case KeyEvent.KEYCODE_CHANNEL_DOWN:
                     bottomBarAdapter.restoreFocus();
+                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_UP_LEFT:
+                case KeyEvent.KEYCODE_DPAD_UP_RIGHT:
+                case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_UP:
+                case KeyEvent.KEYCODE_CHANNEL_UP:
                     return true;
             }
             return onKey(v, keyCode, event);
         };
         private final OnClickListener clickListenerInternal = v -> {
             BadgeCard card = currentRow.get(lastActiveIx);
-            if (card.cb != null)
-                card.cb.onClicked(card);
-            clickListenerRoot.onClick(v);
+            if (card.cb != null) {
+                if (!card.cb.onClicked(card)) {
+                    clickListenerRoot.onClick(v);
+                }
+            } else {
+                clickListenerRoot.onClick(v);
+            }
         };
         @NonNull
         @Override
@@ -473,8 +499,9 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
             vh.primaryText.setSelected(hasFocus);
             bottomBarAdapter.showChevron();
             BadgeCard card = currentRow.get(lastActiveIx);
-            if (card.cb != null)
+            if (card.cb != null) {
                 card.cb.onHovered(card, hasFocus);
+            }
         }
 
         @Override
@@ -524,6 +551,8 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
             currentRowIx = rowIx;
             currentRow = rows.get(rowIx);
             lastActiveIx = 0;
+            setFocusable(getItemCount() > 0);
+            setFocusableInTouchMode(getItemCount() > 0);
         }
         public boolean selectRow(int rowIx) {
             selectRowPriv(rowIx);
@@ -667,8 +696,9 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
                 }
             }
             BadgeCard card = cards.get(position);
-            if (card.cb != null)
+            if (card.cb != null) {
                 card.cb.onHovered(card, hasFocus);
+            }
         }
         @Override
         public int getItemCount() {
@@ -701,9 +731,13 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
         };
         private final OnClickListener clickListenerInternal = v -> {
             BadgeCard card = cards.get(topBarRow);
-            if (card.cb != null)
-                card.cb.onClicked(card);
-            clickListenerRoot.onClick(v);
+            if (card.cb != null) {
+                if (!card.cb.onClicked(card)) {
+                    clickListenerRoot.onClick(v);
+                }
+            } else {
+                clickListenerRoot.onClick(v);
+            }
         };
         @NonNull
         @Override
@@ -752,6 +786,16 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
             }
         }
     }
+    public int addItems(int row, List<?> items) {
+        for (Object item : items) {
+            if (item instanceof Card) {
+                addItem(row, (Card) item);
+            } else {
+                addItem(row, null);
+            }
+        }
+        return topBadgeBarAdapter.getItemCount(row)-1;
+    }
     public int addItem(int row, Card item) {
         if (item instanceof BadgeCard) {
             topBadgeBarAdapter.add(row, (BadgeCard) item);
@@ -781,8 +825,6 @@ public class LauncherBar extends FrameLayout implements ViewTreeObserver.OnGloba
         bottomBarAdapter.requestSelection(0);
     }
     private void constructor() {
-        getViewTreeObserver().addOnGlobalFocusChangeListener(this);
-
         Context ctx = getContext();
         LayoutInflater inflater = LayoutInflater.from(ctx);
         inflater.inflate(R.layout.launcher_bar, this, true);

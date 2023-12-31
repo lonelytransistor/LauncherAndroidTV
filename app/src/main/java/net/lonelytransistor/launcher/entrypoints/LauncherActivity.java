@@ -9,16 +9,21 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 
 import net.lonelytransistor.launcher.BadgeCard;
+import net.lonelytransistor.launcher.Card;
 import net.lonelytransistor.launcher.LauncherBar;
 import net.lonelytransistor.launcher.MovieCard;
 import net.lonelytransistor.launcher.R;
+import net.lonelytransistor.launcher.WidgetBar;
 import net.lonelytransistor.launcher.generics.GenericActivity;
 
-public class LauncherActivity extends GenericActivity {
+public class LauncherActivity extends GenericActivity implements ViewTreeObserver.OnGlobalFocusChangeListener {
     private static final String TAG = "LauncherActivity";
     private static final String PERMISSION_READ_TV_LISTINGS = "android.permission.READ_TV_LISTINGS";
 
@@ -71,52 +76,65 @@ public class LauncherActivity extends GenericActivity {
             }
         }
     }
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        widgetBar.onStop();
+    }
+    WidgetBar widgetBar;
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        start();
+    public void onGlobalFocusChanged(View oldFocus, View newFocus) {
+        Log.i(TAG, "Focus: " + newFocus);
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Set the global focus change listener
+        //getWindow().getDecorView().getRootView().getViewTreeObserver().addOnGlobalFocusChangeListener(this);
 
         if (true) {
             start();
         } else if (true) {
             setContentView(R.layout.activity_main);
             LauncherBar bar = findViewById(R.id.launcherBar);
+            widgetBar = findViewById(R.id.widgetBar);
+            //widgetBar.constructor(this);
 
             int row = bar.addRow(new BadgeCard("Title",
-                    "Test0", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
-            bar.addItem(row, new MovieCard(1));
-            bar.addItem(row, new MovieCard(2));
-            bar.addItem(row, new MovieCard(3));
-            bar.addItem(row, new MovieCard(4));
+                    "Test0", R.drawable.icon_apps, 0xffff5050, 0xff5050ff, null));
+            bar.addItems(row, widgetBar.getAllWidgetCards());
             row = bar.addRow(new BadgeCard("Title",
-                    "Test1", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
-            bar.addItem(row, new MovieCard(5));
-            bar.addItem(row, new MovieCard(6));
-            bar.addItem(row, new MovieCard(8));
+                    "Test2", R.drawable.icon_apps, 0xffff5050, 0xff5050ff, new Card.Callback() {
+                @Override
+                public boolean onClicked(Card card) {
+                    return false;
+                    /*int id = mAppWidgetHost.allocateAppWidgetId();
+                    Log.i(TAG, "Bound: " + mAppWidgetManager.bindAppWidgetIdIfAllowed(id, info.provider));
+                    AppWidgetHostView view = mAppWidgetHost.createView(LauncherActivity.this, id, info);
+                    view.setAppWidget(id, info);
+                    widgetBar.addView(view);/**/
+                }
+
+                @Override
+                public void onHovered(Card card, boolean hovered) {
+
+                }
+            }));
+            bar.addItem(row, new BadgeCard("Title",
+                    "Test0", R.drawable.icon_apps, 0xffff5050, 0xff5050ff, null));
+            bar.addItem(row, new BadgeCard("Title",
+                    "Test1", R.drawable.icon_apps, 0xffff5050, 0xff5050ff, null));
+            bar.addItem(row, new BadgeCard("Title",
+                    "Test2", R.drawable.icon_apps, 0xffff5050, 0xff5050ff, null));
             row = bar.addRow(new BadgeCard("Title",
-                    "Test2", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
-            bar.addItem(row, new BadgeCard("Title",
-                    "Test0", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
-            bar.addItem(row, new BadgeCard("Title",
-                    "Test1", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
-            bar.addItem(row, new BadgeCard("Title",
-                    "Test2", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
-            row = bar.addRow(new BadgeCard("Title",
-                    "Test3", R.drawable.icon_apps, 0xffff5050, 0xff5050ff,
-                    null, null));
+                    "Test3", R.drawable.icon_apps, 0xffff5050, 0xff5050ff, null));
             bar.addItem(row, new MovieCard(9));
+
         }
     }
 }

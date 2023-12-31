@@ -10,6 +10,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <net.lonelytransistor.launcher.WidgetBar
+        android:id="@+id/widgetBar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:columnCount="10"
+        android:orientation="horizontal"
+        android:rowCount="5"
+        app:layout_constraintBottom_toTopOf="@+id/launcherBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <net.lonelytransistor.launcher.LauncherBar
         android:id="@+id/launcherBar"
         android:layout_width="match_parent"

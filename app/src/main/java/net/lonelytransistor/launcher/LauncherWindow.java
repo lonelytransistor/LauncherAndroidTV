@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.icu.util.Calendar;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
@@ -13,7 +12,6 @@ import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
 
-import net.lonelytransistor.commonlib.OutlinedTextView;
 import net.lonelytransistor.launcher.generics.GenericWindow;
 import net.lonelytransistor.launcher.repos.ApkRepo;
 import net.lonelytransistor.launcher.repos.JustWatch;
@@ -52,9 +50,11 @@ public class LauncherWindow extends GenericWindow {
     private final Map<String, Integer> rows = new HashMap<>();
     private final Map<String, Long> timestamps = new HashMap<>();
     private final LauncherBar launcherBar;
+    private final WidgetBar widgetBar;
     public LauncherWindow(Context ctx) {
         super(ctx, R.layout.activity_launcher_new);
 
+        widgetBar = (WidgetBar) findViewById(R.id.widget_bar);
         launcherBar = (LauncherBar) findViewById(R.id.launcher_bar);
         getView().setOnKeyListener(mKeyListener);
         launcherBar.setOnKeyListener(mKeyListener);
@@ -78,24 +78,19 @@ public class LauncherWindow extends GenericWindow {
                         ApkRepo.isSystemApp(inputInfo.getServiceInfo().packageName) &&
                         img != null) {
                     BadgeCard card = new BadgeCard(String.valueOf(inputInfo.loadLabel(ctx)),
-                            "", null, 0, 0,
-                            img, new Card.Callback() {
+                            img,
+                            (state == TvInputManager.INPUT_STATE_CONNECTED_STANDBY) ? R.drawable.power_off :
+                            (state == TvInputManager.INPUT_STATE_CONNECTED ? R.drawable.running : null),
+                            new Card.Callback() {
                         @Override
-                        public void onClicked(Card card) {
+                        public boolean onClicked(Card card) {
                             tvView.tune(inputInfo.getId(), TvContract.buildChannelUriForPassthroughInput(inputInfo.getId()));
                             hide();
+                            return false;
                         }
                         @Override
                         public void onHovered(Card card, boolean hovered) {}
                     });
-                    /*switch (state) {
-                        case TvInputManager.INPUT_STATE_CONNECTED_STANDBY:
-                            card.statusIcon = getDrawable(R.drawable.power_off);
-                            break;
-                        case TvInputManager.INPUT_STATE_CONNECTED:
-                            card.statusIcon = getDrawable(R.drawable.running);
-                            break;
-                    }*/
                     launcherBar.addItem(row, card);
                 }
             }
@@ -117,7 +112,7 @@ public class LauncherWindow extends GenericWindow {
         timestamps.put(POPULAR_SERIES_ROW, 0L);
         for (ApkRepo.App app : ApkRepo.getPlatformApps()) {
             row = launcherBar.addRow(new BadgeCard(app.name, app.badge, new Card.Callback() {
-                @Override public void onClicked(Card card) { ctx.startActivity(app.defaultIntent); }
+                @Override public boolean onClicked(Card card) { ctx.startActivity(app.defaultIntent); return false; }
                 @Override public void onHovered(Card card, boolean hovered) {}
             }));
             rows.put(app.name, row);
@@ -125,7 +120,7 @@ public class LauncherWindow extends GenericWindow {
         }
         for (ApkRepo.App app : ApkRepo.getNonPlatformVideoApps()) {
             row = launcherBar.addRow(new BadgeCard(app.name, app.badge, new Card.Callback() {
-                @Override public void onClicked(Card card) { ctx.startActivity(app.defaultIntent); }
+                @Override public boolean onClicked(Card card) { ctx.startActivity(app.defaultIntent); return false; }
                 @Override public void onHovered(Card card, boolean hovered) {}
             }));
             rows.put(app.name, row);
@@ -134,7 +129,7 @@ public class LauncherWindow extends GenericWindow {
 
         for (ApkRepo.App app : ApkRepo.getAudioApps()) {
             row = launcherBar.addRow(new BadgeCard(app.name, app.badge, new Card.Callback() {
-                @Override public void onClicked(Card card) { ctx.startActivity(app.defaultIntent); }
+                @Override public boolean onClicked(Card card) { ctx.startActivity(app.defaultIntent); return false; }
                 @Override public void onHovered(Card card, boolean hovered) {}
             }));
             rows.put(app.name, row);
@@ -142,7 +137,7 @@ public class LauncherWindow extends GenericWindow {
         }
         for (ApkRepo.App app : ApkRepo.getGamingApps()) {
             row = launcherBar.addRow(new BadgeCard(app.name, app.badge, new Card.Callback() {
-                @Override public void onClicked(Card card) { ctx.startActivity(app.defaultIntent); }
+                @Override public boolean onClicked(Card card) { ctx.startActivity(app.defaultIntent); return false; }
                 @Override public void onHovered(Card card, boolean hovered) {}
             }));
             rows.put(app.name, row);
@@ -160,31 +155,23 @@ public class LauncherWindow extends GenericWindow {
             apps.addAll(ApkRepo.getGamingApps());
             for (ApkRepo.App app : ApkRepo.getApps(null, apps)) {
                 launcherBar.addItem(row, new BadgeCard(app.name, app.badge != null ? app.badge : app.icon, new Card.Callback() {
-                    @Override public void onClicked(Card card) { ctx.startActivity(app.defaultIntent); }
+                    @Override public boolean onClicked(Card card) { ctx.startActivity(app.defaultIntent); return false; }
                     @Override public void onHovered(Card card, boolean hovered) {}
                 }));
             }
         }
         row = launcherBar.addRow(
                 new BadgeCard("Settings", ApkRepo.getActionBadge(Settings.ACTION_SETTINGS), new Card.Callback() {
-                    @Override public void onClicked(Card card) { startActivity(new Intent(Settings.ACTION_SETTINGS)); }
+                    @Override public boolean onClicked(Card card) { startActivity(new Intent(Settings.ACTION_SETTINGS)); return false; }
                     @Override public void onHovered(Card card, boolean hovered) {}
                 })
         );
         rows.put(SETTINGS_ROW, row);
+        launcherBar.addItems(row, widgetBar.getAllWidgetCards());
         timestamps.put(SETTINGS_ROW, System.currentTimeMillis());
         //clockInterval = new Utils.Interval(() -> launcherBar.post(() -> updateClock()), 1000);
     }
 
-    private void updateClock() {
-        Calendar calendar = Calendar.getInstance();
-        OutlinedTextView clockView = (OutlinedTextView) findViewById(R.id.clock);
-        int H = calendar.get(Calendar.HOUR_OF_DAY);
-        int M = 100 + calendar.get(Calendar.MINUTE);
-        String HHMM = H + ":" + String.valueOf(M).substring(1);
-        clockView.setText(HHMM);
-        clockView.invalidate();
-    }
     private void updateRows() {
         long timeNow = System.currentTimeMillis();
         int row;
@@ -194,7 +181,8 @@ public class LauncherWindow extends GenericWindow {
             launcherBar.clearRow(row);
             long dayNow = timeNow/1000/3600/24;
             for (MovieTitle movie : MovieRepo.getWatchNext()) {
-                if ((dayNow - movie.system.lastWatched/1000/3600/24) < 30) {
+                if ((dayNow - movie.system.lastWatched/1000/3600/24) < 30 &&
+                        movie.system.state != MovieTitle.System.State.WATCHED) {
                     launcherBar.addItem(row, new MovieCard(movie));
                 }
             }
@@ -238,7 +226,6 @@ public class LauncherWindow extends GenericWindow {
     @Override
     public void onShow() {
         launcherBar.resetSelection();
-        updateClock();
         updateRows();
     }
     @Override

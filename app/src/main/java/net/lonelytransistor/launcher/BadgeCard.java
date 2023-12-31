@@ -9,13 +9,15 @@ public class BadgeCard extends Card {
     public Object badgeImage;
     public String badgeText;
     public Object mainImage;
+    public Object statusIcon;
     public int badgeColor;
     public int backgroundColor;
 
     public BadgeCard(String title,
                      String badgeText, Object badgeImage, int badgeColor, int backgroundColor,
-                     Object mainImage, Callback cb) {
+                     Object mainImage, Object statusIcon, Callback cb) {
         this.title = title;
+        this.statusIcon = statusIcon;
         this.mainImage = mainImage;
         this.badgeImage = badgeImage;
         this.badgeText = badgeText;
@@ -25,13 +27,17 @@ public class BadgeCard extends Card {
     }
     public BadgeCard(String title,
                      String badgeText, Object badgeImage, int badgeColor, int backgroundColor, Callback cb) {
-        this(title, badgeText, badgeImage, badgeColor, backgroundColor, null, cb);
+        this(title, badgeText, badgeImage, badgeColor, backgroundColor, null, null, cb);
     }
     public BadgeCard(String title, Object mainImage, Callback cb) {
-        this(title, null, null, 0, 0, mainImage, cb);
+        this(title, null, null, 0, 0, mainImage, null, cb);
+    }
+    public BadgeCard(String title, Object mainImage, Object statusIcon, Callback cb) {
+        this(title, null, null, 0, 0, mainImage, statusIcon, cb);
     }
     public BadgeCard(BadgeCard c) {
         this.title = c.title;
+        this.statusIcon = c.statusIcon;
         this.mainImage = c.mainImage;
         this.badgeImage = c.badgeImage;
         this.badgeText = c.badgeText;
@@ -44,12 +50,12 @@ public class BadgeCard extends Card {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        BadgeCard card = (BadgeCard) o;
-        return Objects.equals(title, card.title) && Objects.equals(badgeImage, card.badgeImage) && Objects.equals(badgeText, card.badgeText) && Objects.equals(mainImage, card.mainImage) && Objects.equals(cb, card.cb);
+        BadgeCard badgeCard = (BadgeCard) o;
+        return badgeColor == badgeCard.badgeColor && backgroundColor == badgeCard.backgroundColor && Objects.equals(title, badgeCard.title) && Objects.equals(badgeImage, badgeCard.badgeImage) && Objects.equals(badgeText, badgeCard.badgeText) && Objects.equals(mainImage, badgeCard.mainImage) && Objects.equals(statusIcon, badgeCard.statusIcon);
     }
     @Override
     public int hashCode() {
-        return Objects.hash(title, badgeImage, badgeText, mainImage, cb);
+        return Objects.hash(title, badgeImage, badgeText, mainImage, statusIcon, badgeColor, backgroundColor);
     }
     @NonNull
     @Override

@@ -47,6 +47,17 @@ public class MovieTitle implements Serializable {
             WATCHED
         }
         public State state = State.NONE;
+
+        @Override
+        public String toString() {
+            return "System{" +
+                    "pkgName='" + pkgName + '\'' +
+                    ", lastWatched=" + lastWatched +
+                    ", timeWatched=" + timeWatched +
+                    ", runtime=" + runtime +
+                    ", state=" + state +
+                    '}';
+        }
     }
     final public System system = new System();
 
@@ -112,16 +123,17 @@ public class MovieTitle implements Serializable {
         year = priv.year;
         offers = priv.offers;
     }
+
     @Override
     public String toString() {
-        return "Title{" +
+        return "MovieTitle{" +
                 "id=" + id +
                 ", type=" + type +
                 ", title='" + title + '\'' +
                 ", originalTitle='" + originalTitle + '\'' +
                 ", description='" + description + '\'' +
+                ", imagePath='" + imagePath + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
-                ", image=" + imagePath +
                 ", runtime=" + runtime +
                 ", ageRating=" + ageRating +
                 ", genres=" + Arrays.toString(genres) +
@@ -130,9 +142,12 @@ public class MovieTitle implements Serializable {
                 ", imdbScore=" + imdbScore +
                 ", popularity=" + popularity +
                 ", popularityDelta=" + popularityDelta +
+                ", year=" + year +
                 ", offers=" + offers +
+                ", system=" + system +
                 '}';
     }
+
     public MovieTitle(int id) {
         this.id = id;
         type = JustWatch.Type.ERROR;
